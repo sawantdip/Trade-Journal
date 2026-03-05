@@ -1,0 +1,18 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+
+# local env
+.env
+.env.local
+.env.*.local
+
+# vercel local linking
+.vercel/
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
