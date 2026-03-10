@@ -14,9 +14,13 @@ create table if not exists public.profiles (
   daily_max_loss numeric not null default 5000,
   max_trades_per_day integer not null default 5,
   monthly_target numeric not null default 10000,
+  withdrawals jsonb not null default '[]'::jsonb,
   lot_sizes jsonb not null default '{}'::jsonb,
   updated_at timestamptz not null default now()
 );
+
+alter table public.profiles
+  add column if not exists withdrawals jsonb not null default '[]'::jsonb;
 
 create table if not exists public.trades (
   id text primary key,

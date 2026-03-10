@@ -22,6 +22,14 @@ const normalizeAccount = (row) => ({
   name: row.name || "Trader",
 });
 
+const normalizeWithdrawal = (item) => ({
+  id: item.id,
+  date: item.date,
+  amount: Number(item.amount || 0),
+  note: item.note || "",
+  createdAt: Number(item.createdAt || Date.now()),
+});
+
 const normalizeTradeRow = (row) => ({
   id: row.id,
   date: row.date,
@@ -120,7 +128,7 @@ export async function loadProfile(email) {
 
   const { data, error } = await supabase
     .from(PROFILES_TABLE)
-    .select("display_name,initial_capital,daily_max_loss,max_trades_per_day,monthly_target,lot_sizes")
+    .select("display_name,initial_capital,daily_max_loss,max_trades_per_day,monthly_target,withdrawals,lot_sizes")
     .eq("email", email)
     .maybeSingle();
 
@@ -132,6 +140,7 @@ export async function loadProfile(email) {
     dailyMaxLoss: Number(data.daily_max_loss || 5000),
     maxTradesPerDay: Number(data.max_trades_per_day || 5),
     monthlyTarget: Number(data.monthly_target || 10000),
+    withdrawals: Array.isArray(data.withdrawals) ? data.withdrawals.map(normalizeWithdrawal) : [],
     lotSizes: data.lot_sizes || {},
   };
 
@@ -151,6 +160,7 @@ export async function saveProfile(email, profile) {
       daily_max_loss: Number(profile.dailyMaxLoss || 5000),
       max_trades_per_day: Number(profile.maxTradesPerDay || 5),
       monthly_target: Number(profile.monthlyTarget || 10000),
+      withdrawals: Array.isArray(profile.withdrawals) ? profile.withdrawals.map(normalizeWithdrawal) : [],
       lot_sizes: profile.lotSizes || {},
       updated_at: new Date().toISOString(),
     },
@@ -174,7 +184,6 @@ export async function loadTrades(email) {
 
   const remoteTrades = (data || []).map(normalizeTradeRow);
 
-  // Prevent wiping browser data if remote is empty due policy/misconfig.
   if (!remoteTrades.length && localTrades.length) {
     return localTrades;
   }
